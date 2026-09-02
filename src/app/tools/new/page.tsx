@@ -11,11 +11,11 @@ export default async function NewToolPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">ツール新規登録</h1>
-      <p className="mb-6 text-sm text-slate-500">
+      <h1 className="mb-1 text-xl font-semibold text-slate-900 dark:text-slate-100">ツール新規登録</h1>
+      <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
         新しく管理対象に追加するエージェント・Webアプリの情報を入力してください。
       </p>
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
         <ToolForm action={createToolAction} submitLabel="登録する" />
       </div>
     </div>

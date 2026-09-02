@@ -19,7 +19,7 @@ export function PasswordField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium text-slate-700">
+      <label htmlFor={id} className="text-sm font-medium text-slate-700 dark:text-slate-300">
         {label}
       </label>
       <div className="relative">
@@ -30,7 +30,7 @@ export function PasswordField({
           required
           minLength={minLength}
           autoComplete={autoComplete}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 pr-10 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
+          className="w-full rounded-md border border-slate-300 px-3 py-2 pr-10 text-sm text-slate-900 focus:border-slate-500 focus:outline-none dark:border-slate-600"
         />
         <button
           type="button"

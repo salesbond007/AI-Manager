@@ -27,10 +27,10 @@ export default async function EditToolPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">
+      <h1 className="mb-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
         {tool.icon} {tool.nickname} を編集
       </h1>
-      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6">
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
         <ToolForm
           action={boundAction}
           submitLabel="保存する"
@@ -47,6 +47,13 @@ export default async function EditToolPage({
             apiKeyScopeNote: tool.apiKeyScopeNote ?? "",
             apiKeyLastRotatedAt: toDateInputValue(tool.apiKeyLastRotatedAt),
             lastDeployedAt: toDateInputValue(tool.lastDeployedAt),
+            monthlyFixedCostJpy: tool.monthlyFixedCostJpy?.toString() ?? "",
+            monthlyBudgetJpy: tool.monthlyBudgetJpy?.toString() ?? "",
+            docUrl: tool.docUrl ?? "",
+            runbookText: tool.runbookText ?? "",
+            controlWebhookUrl: tool.controlWebhookUrl ?? "",
+            alertFailureThreshold: tool.alertFailureThreshold?.toString() ?? "",
+            alertStaleHours: tool.alertStaleHours?.toString() ?? "",
           }}
         />
       </div>

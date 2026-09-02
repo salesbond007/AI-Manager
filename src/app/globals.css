@@ -3,7 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  color-scheme: light;
+  color-scheme: light dark;
 }
 
 @theme inline {
@@ -19,9 +19,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* フォーム入力欄はOSのダークモード設定に関わらず常にライト表示に固定し、
+   文字が薄く見えなくなる問題を避ける */
 input,
 select,
 textarea {
+  color-scheme: light;
   background-color: #ffffff;
   color: #0f172a;
 }

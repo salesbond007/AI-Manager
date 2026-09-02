@@ -16,7 +16,7 @@ export function DeleteToolButton({ toolId, nickname }: { toolId: string; nicknam
           deleteToolAction(toolId);
         });
       }}
-      className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
+      className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/40"
     >
       {isPending ? "削除中..." : "削除"}
     </button>

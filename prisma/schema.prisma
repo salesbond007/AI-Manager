@@ -51,9 +51,10 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  invitesSent   Invite[]     @relation("InvitedBy")
-  toolsCreated  Tool[]       @relation("ToolCreatedBy")
-  auditLogs     AuditLog[]
+  invitesSent    Invite[]        @relation("InvitedBy")
+  toolsCreated   Tool[]          @relation("ToolCreatedBy")
+  auditLogs      AuditLog[]
+  monthlyReviews MonthlyReview[]
 }
 
 model Invite {
@@ -92,13 +93,57 @@ model Tool {
   reportKeyHash        String?  @unique
   reportKeyLastRotatedAt DateTime?
 
+  // コスト管理
+  monthlyFixedCostJpy   Int?     // 月額固定費（クラウドVM代など）
+  monthlyBudgetJpy      Int?     // 従量課金分の予算上限（超過でアラート）
+
+  // ドキュメント・引き継ぎ
+  docUrl       String?  // 仕様書・要件整理へのリンク
+  runbookText  String?  // 障害時の対応手順（誰が何をするか）
+
+  // アクセス・操作: 起動/停止/再実行を叩く先のWebhook URL（未設定ならボタンは無効）
+  controlWebhookUrl String?
+
+  // アラート閾値（ツールごとにカスタマイズ可能。未設定ならデフォルト値を使用）
+  alertFailureThreshold Int? // 連続失敗の回数（デフォルト3）
+  alertStaleHours       Int? // 未報告とみなす時間（デフォルト24）
+
   createdBy   User      @relation("ToolCreatedBy", fields: [createdById], references: [id])
   createdById String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  statusReports StatusReport[]
-  auditLogs     AuditLog[]
+  statusReports  StatusReport[]
+  auditLogs      AuditLog[]
+  costEntries    CostEntry[]
+  monthlyReviews MonthlyReview[]
+}
+
+model CostEntry {
+  id          String   @id @default(cuid())
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  toolId      String
+  yearMonth   String   // "2026-09" 形式
+  usageCostJpy Int     // その月の従量課金実績（円）
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@unique([toolId, yearMonth])
+  @@index([toolId, yearMonth])
+}
+
+model MonthlyReview {
+  id            String   @id @default(cuid())
+  tool          Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  toolId        String
+  yearMonth     String   // "2026-09" 形式
+  reviewedBy    User?    @relation(fields: [reviewedById], references: [id])
+  reviewedById  String?
+  riskScore     Int?     // 0-100などのリスクスコア（任意）
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([toolId, yearMonth])
 }
 
 model StatusReport {
