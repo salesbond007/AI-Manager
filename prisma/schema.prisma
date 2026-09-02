@@ -1,0 +1,129 @@
+// AI-Manager: エージェント/Webアプリ統合管理ダッシュボード
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+enum ToolKind {
+  WEB_APP
+  AGENT
+  SCHEDULED_BATCH
+}
+
+enum DevStatus {
+  PLANNING
+  IN_DEVELOPMENT
+  ACTIVE
+  PAUSED
+  DEPRECATED
+}
+
+enum RunMode {
+  ALWAYS_ON
+  SCHEDULED
+  MANUAL
+}
+
+enum HealthStatus {
+  OK
+  WARNING
+  DOWN
+  ERROR
+  UNKNOWN
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  passwordHash  String
+  role          Role     @default(VIEWER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  invitesSent   Invite[]     @relation("InvitedBy")
+  toolsCreated  Tool[]       @relation("ToolCreatedBy")
+  auditLogs     AuditLog[]
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  email       String
+  role        Role      @default(VIEWER)
+  token       String    @unique
+  invitedBy   User      @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([email])
+}
+
+model Tool {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  nickname    String
+  icon        String    @default("🤖")
+  kind        ToolKind
+  purpose     String
+  devStatus   DevStatus @default(PLANNING)
+  runMode     RunMode
+  servicesUsed String   // カンマ区切り: Claude API, microCMS, Google Drive API など
+  repoUrl     String?
+  dashboardUrl String?  // 管理画面へのワンクリックリンク
+  lastDeployedAt DateTime?
+
+  // セキュリティ・権限（キー自体は保存しない。範囲とローテーション日のみ）
+  apiKeyScopeNote      String?
+  apiKeyLastRotatedAt  DateTime?
+
+  // 状態報告用APIキー（ハッシュのみ保存。発行時に一度だけ平文を表示）
+  reportKeyHash        String?  @unique
+  reportKeyLastRotatedAt DateTime?
+
+  createdBy   User      @relation("ToolCreatedBy", fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  statusReports StatusReport[]
+  auditLogs     AuditLog[]
+}
+
+model StatusReport {
+  id             String       @id @default(cuid())
+  tool           Tool         @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  toolId         String
+  status         HealthStatus
+  message        String?
+  processedCount Int?
+  successCount   Int?
+  nextRunAt      DateTime?
+  reportedAt     DateTime     @default(now())
+
+  @@index([toolId, reportedAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     User?    @relation(fields: [actorId], references: [id])
+  actorId   String?
+  action    String
+  tool      Tool?    @relation(fields: [toolId], references: [id])
+  toolId    String?
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
