@@ -15,13 +15,18 @@ async function main() {
     return;
   }
 
+  const passwordHash = await bcrypt.hash(password, 12);
   const existing = await prisma.user.findUnique({ where: { email } });
+
   if (existing) {
-    console.log(`既に ${email} は登録済みです。スキップしました。`);
+    await prisma.user.update({
+      where: { email },
+      data: { name, passwordHash, role: "ADMIN" },
+    });
+    console.log(`既存の管理者 ${email} のパスワードを ADMIN_PASSWORD の値に同期しました。`);
     return;
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.create({
     data: { email, name, passwordHash, role: "ADMIN" },
   });
