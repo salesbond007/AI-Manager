@@ -4,16 +4,19 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL;
+  const rawEmail = process.env.ADMIN_EMAIL;
   const name = process.env.ADMIN_NAME ?? "管理者";
   const password = process.env.ADMIN_PASSWORD;
 
-  if (!email || !password) {
+  if (!rawEmail || !password) {
     console.log(
       "ADMIN_EMAIL / ADMIN_PASSWORD が未設定のため、初期管理者の作成をスキップしました。"
     );
     return;
   }
+
+  // ログイン時はメールアドレスを小文字化して照合するため、保存時も揃える
+  const email = rawEmail.toLowerCase().trim();
 
   const passwordHash = await bcrypt.hash(password, 12);
   const existing = await prisma.user.findUnique({ where: { email } });
