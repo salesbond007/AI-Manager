@@ -98,9 +98,16 @@ curl -X POST https://<dashboard-domain>/api/status-report \
 ## Vercelへのデプロイ
 
 1. Vercelで新規プロジェクトを作成し、このリポジトリを接続
-2. 環境変数 `DATABASE_URL` `AUTH_SECRET` `SLACK_WEBHOOK_URL` `CRON_SECRET` をVercelのプロジェクト設定に登録（Postgresは Neon や Vercel Postgres などのマネージドサービスを利用）
-3. デプロイ後、初回のみ `npx prisma migrate deploy` を実行（Vercelのビルドコマンドに組み込むか、ローカルから本番DATABASE_URLに向けて実行）
-4. `ADMIN_EMAIL` `ADMIN_NAME` `ADMIN_PASSWORD` を一時的に設定して `npm run db:seed` を実行し、初期管理者を作成（作成後は環境変数から削除して構いません）
-5. `vercel.json` の Cron 設定が自動的に有効化され、毎時 `/api/cron/check-stale` が呼び出されます
+2. Storageタブから Postgres（Neon など）を作成してプロジェクトに接続すると `DATABASE_URL` が自動設定される
+3. 環境変数 `AUTH_SECRET` `SLACK_WEBHOOK_URL` `CRON_SECRET` `ADMIN_EMAIL` `ADMIN_NAME` `ADMIN_PASSWORD` をVercelのプロジェクト設定に登録
+4. デプロイを実行すると、`vercel-build` スクリプト（`package.json`）が自動的に以下を行う
+   - `prisma migrate deploy`（テーブル作成・更新）
+   - `prisma/seed.ts`（`ADMIN_EMAIL`/`ADMIN_PASSWORD` の管理者アカウントを作成、既に存在する場合はパスワードを同期）
+   - `next build`
+5. `vercel.json` の Cron 設定が自動的に有効化される（Hobbyプランの制約で1日1回。Proプランならもっと頻度を上げられる）
 
 フォーム営業ツール本体（クラウドVM常時稼働）とは別インフラで問題ありません。
+
+### 管理者パスワードを忘れた／リセットしたい場合
+
+Vercelの環境変数 `ADMIN_PASSWORD` の値を新しいパスワードに書き換えて保存し、再デプロイしてください（環境変数の保存だけでは反映されないため、デプロイのトリガーが必要です）。デプロイ完了後、新しいパスワードでログインできます。
